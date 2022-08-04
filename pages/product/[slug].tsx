@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   NextPage,
   GetServerSideProps,
@@ -10,7 +11,7 @@ import { ShopLayout } from "../../components/layouts/ShopLayout";
 import { ProductSlideshow } from "../../components/products/ProductSlideshow";
 import { ItemCounter } from "../../components/ui";
 import { SizeSelector } from "../../components/products";
-import { IProduct } from "../../interfaces";
+import { ICartProduct, IProduct, ISize } from "../../interfaces";
 import { dbProducts } from "../../database";
 
 interface Props {
@@ -18,10 +19,23 @@ interface Props {
 }
 
 const ProductPage: NextPage<Props> = ({ product }) => {
-  // const router = useRouter();
-  // const { products: product, isLoading } = useProducts(
-  //   `/products/${router.query.slug}`
-  // );
+  const [tempCartProduct, setTempCartProduct] = useState<ICartProduct>({
+    _id: product._id,
+    image: product.images[0],
+    price: product.price,
+    size: undefined,
+    slug: product.slug,
+    title: product.title,
+    gender: product.gender,
+    quantity: 1,
+  });
+
+  const selectedSize = (size: ISize) => {
+    setTempCartProduct((currentProduct) => ({
+      ...currentProduct,
+      size,
+    }));
+  };
 
   return (
     <ShopLayout title={product.title} pageDescription={product.description}>
@@ -46,13 +60,17 @@ const ProductPage: NextPage<Props> = ({ product }) => {
               <SizeSelector
                 // selectedSize={product.sizes[0]}
                 sizes={product.sizes}
+                selectedSize={tempCartProduct.size}
+                onSelectedSize={selectedSize}
               />
             </Box>
 
             {/*  Agregar al carrito */}
             {product.inStock > 0 ? (
               <Button color="secondary" className="circular-btn">
-                Agregar al carrito
+                {tempCartProduct.size
+                  ? "Agregar al carrito"
+                  : "Seleccione una talla"}
               </Button>
             ) : (
               <Chip
