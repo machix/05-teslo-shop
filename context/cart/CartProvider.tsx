@@ -6,6 +6,10 @@ import { CartContext, cartReducer } from "./";
 
 export interface CartState {
   cart: ICartProduct[];
+  numbersOfItems: number;
+  subTotal: number;
+  Tax: number;
+  Total: number;
 }
 
 interface Props {
@@ -14,6 +18,10 @@ interface Props {
 
 const CART_INITIAL_STATE: CartState = {
   cart: [],
+  numbersOfItems: 0,
+  subTotal: 0,
+  Tax: 0,
+  Total: 0,
 };
 
 export const CartProvider: FC<Props> = ({ children }) => {
@@ -42,6 +50,31 @@ export const CartProvider: FC<Props> = ({ children }) => {
 
   useEffect(() => {
     if (isMounted) Cookie.set("cart", JSON.stringify(state.cart));
+  }, [state.cart, isMounted]);
+
+  useEffect(() => {
+    const numbersOfItems = state.cart.reduce(
+      (prev, current) => current.quantity + prev,
+      0
+    );
+    const subTotal = state.cart.reduce(
+      (prev, current) => current.quantity * current.price + prev,
+      0
+    );
+
+    const taxRate = Number(process.env.NEXT_PUBLIC_TAX_RATE || 0);
+
+    const orderSummary = {
+      numbersOfItems,
+      subTotal,
+      Tax: subTotal * taxRate,
+      Total: subTotal * (taxRate + 1),
+    };
+
+    dispatch({
+      type: "[Cart] - update cart order summary",
+      payload: orderSummary,
+    });
   }, [state.cart, isMounted]);
 
   const addProductToCart = (product: ICartProduct) => {
