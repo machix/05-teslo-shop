@@ -10,7 +10,6 @@ import {
   Box,
   Button,
 } from "@mui/material";
-import { initialData } from "../../database/products";
 import { ItemCounter } from "../ui";
 import { CartContext } from "../../context";
 import { ICartProduct } from "../../interfaces";
