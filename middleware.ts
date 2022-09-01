@@ -15,7 +15,7 @@ export async function middleware(request: NextRequest) {
     try {
       await jose.jwtVerify(
         token || "",
-        new TextEncoder().encode(process.env.JWT_SECRET)
+        new TextEncoder().encode(process.env.JWT_SECRET_SEED)
       );
       isValidToken = true;
       return NextResponse.next();

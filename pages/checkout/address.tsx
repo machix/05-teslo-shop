@@ -3,13 +3,14 @@ import {
   Button,
   FormControl,
   Grid,
-  InputLabel,
   MenuItem,
   Select,
   TextField,
   Typography,
 } from "@mui/material";
 import { ShopLayout } from "../../components/layouts/ShopLayout";
+
+import { countries } from "../../utils";
 
 const AddressPage = () => {
   return (
@@ -45,11 +46,12 @@ const AddressPage = () => {
         </Grid>
         <Grid item xs={12} sm={6}>
           <FormControl fullWidth>
-            <Select variant="filled" label="Pais" value={1}>
-              <MenuItem value={1}>Costa Rica</MenuItem>
-              <MenuItem value={2}>Honduras</MenuItem>
-              <MenuItem value={3}>El Salvador</MenuItem>
-              <MenuItem value={4}>Mexico</MenuItem>
+            <Select variant="filled" label="Pais" value={"ARG"}>
+              {countries.map((country) => (
+                <MenuItem key={country.code} value={country.code}>
+                  {country.name}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
         </Grid>
