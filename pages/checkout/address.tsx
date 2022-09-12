@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useRouter } from "next/router";
 import {
   Box,
@@ -15,6 +15,7 @@ import { useForm } from "react-hook-form";
 
 import { ShopLayout } from "../../components/layouts/ShopLayout";
 import { countries } from "../../utils";
+import { CartContext } from "../../context";
 
 type FormData = {
   firstName: string;
@@ -27,39 +28,36 @@ type FormData = {
   phone: string;
 };
 
+const getAddressFromCookies = (): FormData => {
+  return {
+    firstName: Cookies.get("firstName") || "",
+    lastName: Cookies.get("lastName") || "",
+    address: Cookies.get("address") || "",
+    address2: Cookies.get("address2") || "",
+    zip: Cookies.get("zip") || "",
+    city: Cookies.get("city") || "",
+    country: Cookies.get("country") || "",
+    phone: Cookies.get("phone") || "",
+  };
+};
+
 const AddressPage = () => {
   const router = useRouter();
+
+  const { updateAddress } = useContext(CartContext);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<FormData>({
-    defaultValues: {
-      firstName: "",
-      lastName: "",
-      address: "",
-      address2: "",
-      zip: "",
-      city: "",
-      country: countries[0].code,
-      phone: "",
-    },
+    defaultValues: getAddressFromCookies(),
   });
 
   const [showError, setShowError] = useState(false);
 
   const onSubmitAddress = (data: FormData) => {
-    console.log(data);
-    Cookies.set("firstName", data.firstName);
-    Cookies.set("lastName", data.lastName);
-    Cookies.set("address", data.address);
-    Cookies.set("address2", data.address2 || "");
-    Cookies.set("zip", data.zip);
-    Cookies.set("city", data.city);
-    Cookies.set("country", data.country);
-    Cookies.set("phone", data.phone);
-
+    updateAddress(data);
     router.push("/checkout/summary");
   };
 
@@ -145,7 +143,7 @@ const AddressPage = () => {
             <FormControl fullWidth>
               <TextField
                 select
-                defaultValue={countries[0].code}
+                defaultValue={Cookies.get("country") || countries[0].code}
                 variant="filled"
                 label="Pais"
                 // value={"ARG"}
