@@ -5,12 +5,8 @@ import { ShopLayout } from "../components/layouts";
 import { ProductList } from "../components/products";
 import { useProducts } from "../hooks/useProducts";
 import { FullScreenLoading } from "../components/ui";
-import { useSession } from "next-auth/react";
 
 const HomePage: NextPage = () => {
-  const session = useSession();
-  console.log("🚀 ~ file: index.tsx ~ line 13 ~ session", session);
-
   const { products, isLoading } = useProducts("/products");
 
   return (
