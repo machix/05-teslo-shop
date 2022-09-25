@@ -17,13 +17,13 @@ interface Props {
   children: React.ReactNode;
 }
 
-const Auth_INITIAL_STATE: AuthState = {
+const AUTH_INITIAL_STATE: AuthState = {
   isLoggedIn: false,
   user: undefined,
 };
 
 export const AuthProvider: FC<Props> = ({ children }) => {
-  const [state, dispatch] = useReducer(authReducer, Auth_INITIAL_STATE);
+  const [state, dispatch] = useReducer(authReducer, AUTH_INITIAL_STATE);
   const { data, status } = useSession();
   const router = useRouter();
 
