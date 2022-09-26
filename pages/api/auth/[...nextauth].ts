@@ -1,8 +1,11 @@
+import { useSession } from "next-auth/react";
 import NextAuth from "next-auth";
 import GithubProvider from "next-auth/providers/github";
 import Credentials from "next-auth/providers/credentials";
+import { dbUsers } from "../../../database";
 
-export const authOptions = {
+export default NextAuth({
+  // export const authOptions = {
   // Configure one or more authentication providers
   providers: [
     // ...add more providers here
@@ -22,11 +25,15 @@ export const authOptions = {
       },
       async authorize(credentials) {
         console.log(credentials);
-        // TODO: Validar contra base de datos
 
-        return { name: "Juan", email: "Juan@google.com", role: "admin" };
+        // return { name: "Juan", email: "Juan@google.com", role: "admin" };
+        return await dbUsers.checkUserEmailPassword(
+          credentials!.email,
+          credentials!.password
+        );
       },
     }),
+
     GithubProvider({
       clientId: process.env.GITHUB_ID || "",
       clientSecret: process.env.GITHUB_SECRET || "",
@@ -34,7 +41,37 @@ export const authOptions = {
   ],
 
   // callbacks
-  callbacks: {},
-};
+  callbacks: {
+    async jwt({ token, account, user }) {
+      // console.log({ token, account, user });
+      if (account) {
+        token.accessToken = account.access_token;
 
-export default NextAuth(authOptions);
+        switch (account.type) {
+          case "oauth":
+            token.user = await dbUsers.oAuthToDbUser(
+              user?.email || "",
+              user?.name || ""
+            );
+
+            break;
+          case "credentials":
+            token.user = user;
+            break;
+        }
+      }
+      return token;
+    },
+
+    async session({ session, token, user }) {
+      // console.log({ session, token, user });
+      session.accessToken = token.accessToken;
+      session.user = token.user as any;
+
+      return session;
+    },
+  },
+  // };
+});
+
+// export default NextAuth(authOptions);
