@@ -18,6 +18,8 @@ import { validations } from "../../utils";
 import { tesloApi } from "../../api";
 import { AuthContext } from "../../context";
 import { useRouter } from "next/router";
+import { getSession, signIn } from "next-auth/react";
+import { GetServerSideProps } from "next";
 
 type FormData = {
   name: string;
@@ -50,8 +52,9 @@ const RegisterPage = () => {
     }
 
     // TODO retorno a la pantalla que estabamos
-    const destination = router.query.p?.toString() || "/";
-    router.replace(destination);
+    // const destination = router.query.p?.toString() || "/";
+    // router.replace(destination);
+    await signIn("credentials", { email, password });
 
     // try {
     //   const { data } = await tesloApi.post("/user/register", {
@@ -165,6 +168,31 @@ const RegisterPage = () => {
       </form>
     </AuthLayout>
   );
+};
+
+// You should use getServerSideProps when:
+// - Only if you need to pre-render a page whose data must be fetched at request time
+
+export const getServerSideProps: GetServerSideProps = async ({
+  req,
+  query,
+}) => {
+  const session = await getSession({ req });
+
+  const { p = "/" } = query;
+
+  if (session) {
+    return {
+      redirect: {
+        destination: p.toString(),
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {},
+  };
 };
 
 export default RegisterPage;
