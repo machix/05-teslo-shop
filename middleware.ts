@@ -1,35 +1,50 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
+import { getToken } from "next-auth/jwt";
 
-import * as jose from "jose";
+// import * as jose from "jose";
 
 // This function can be marked `async` if using `await` inside
-export async function middleware(request: NextRequest) {
-  if (request.nextUrl.pathname.startsWith("/checkout")) {
+export async function middleware(req: NextRequest | any) {
+  if (req.nextUrl.pathname.startsWith("/checkout")) {
     const response = NextResponse.next();
 
-    // Getting cookies from the request
-    const token = request.cookies.get("token");
-    let isValidToken = false;
+    const session = await getToken({
+      req,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
 
-    try {
-      await jose.jwtVerify(
-        token || "",
-        new TextEncoder().encode(process.env.JWT_SECRET_SEED)
-      );
-      isValidToken = true;
-      return NextResponse.next();
-    } catch (error) {
-      console.error(`JWT Invalid or not signed in`, { error });
-      isValidToken = false;
-    }
+    // console.log({ session });
 
-    if (!isValidToken) {
-      const { pathname } = request.nextUrl;
+    if (!session) {
+      const { pathname } = req.nextUrl;
       return NextResponse.redirect(
-        new URL(`/auth/login?p=${pathname}`, request.url)
+        new URL(`/auth/login?p=${pathname}`, req.url)
       );
     }
+    return NextResponse.next();
+
+    // Getting cookies from the request
+    // const token = request.cookies.get("token");
+    // let isValidToken = false;
+
+    // try {
+    //   await jose.jwtVerify(
+    //     token || "",
+    //     new TextEncoder().encode(process.env.JWT_SECRET_SEED)
+    //   );
+    //   isValidToken = true;
+    //   return NextResponse.next();
+    // } catch (error) {
+    //   console.error(`JWT Invalid or not signed in`, { error });
+    //   isValidToken = false;
+    // }
+
+    // if (!isValidToken) {
+    //   const { pathname } = request.nextUrl;
+    //   return NextResponse.redirect(
+    //     new URL(`/auth/login?p=${pathname}`, request.url)
+    //   );
+    // }
   }
 }
 

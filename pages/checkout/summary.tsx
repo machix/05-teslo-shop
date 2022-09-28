@@ -11,12 +11,21 @@ import {
   Link,
   Typography,
 } from "@mui/material";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { CartContext } from "../../context";
 import { countries } from "../../utils";
+import Cookies from "js-cookie";
+import { useRouter } from "next/router";
 
 const SummaryPage = () => {
   const { shippingAddress, numbersOfItems } = useContext(CartContext);
+
+  const router = useRouter();
+  useEffect(() => {
+    if (!Cookies.get("firstName")) {
+      router.push("/checkout/address");
+    }
+  }, [router]);
 
   if (!shippingAddress) {
     return <></>;
@@ -72,7 +81,8 @@ const SummaryPage = () => {
                 {city}, {zip}
               </Typography>
               <Typography>
-                {countries.find((c) => c.code === country)?.name}
+                {/* {countries.find((c) => c.code === country)?.name} */}
+                {country}
               </Typography>
               <Typography>{phone}</Typography>
 
