@@ -1,4 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import { getSession } from "next-auth/react";
+import { db } from "../../../database";
+import { IOrder } from "../../../interfaces";
+import { Product } from "../../../models";
 
 type Data = {
   message: string;
@@ -17,5 +21,35 @@ export default function handler(
 }
 
 const createOrder = async (req: NextApiRequest, res: NextApiResponse<Data>) => {
-  return res.status(201).json({ message: "Hola Mundo" });
+  const { orderItems, total } = req.body as IOrder;
+
+  // verificar que tengamos un usuario
+  const session: any = await getSession({ req });
+
+  if (!session) {
+    return res
+      .status(401)
+      .json({ message: "Debe de estar autenticado para hacer esto" });
+  }
+
+  // crear un arreglo con los productos que la persona quiere
+  const productsIds = orderItems.map((product) => product._id);
+  await db.connect();
+
+  const dbProducts = await Product.find({ _id: { $in: productsIds } });
+
+  try {
+    const subTotal = orderItems.reduce((prev, current) => {
+      const currentPrice = dbProducts.find(
+        (prod) => prod._id === current._id
+      )!.price;
+
+      if (!currentPrice) {
+        throw new Error("Verifique el carrito de nuevo, producto no existe");
+      }
+      return current.quantity * currentPrice + prev;
+    }, 0);
+  } catch (error) {}
+
+  return res.status(201).json(req.body);
 };
