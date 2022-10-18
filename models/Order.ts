@@ -43,6 +43,6 @@ const orderSchema = new Schema(
 );
 
 const Order: Model<IOrder> =
-  mongoose.models.User || model("Order", orderSchema);
+  mongoose.models.Order || model("Order", orderSchema);
 
 export default Order;
